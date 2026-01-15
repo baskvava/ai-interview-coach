@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { LandingPage } from "./components/LandingPage";
-import { SettingsModal } from "./components/SettingsModal";
-import { InterviewPage } from "./components/InterviewPage";
+import { LandingPage } from "./_components/LandingPage";
+import { SettingsModal } from "./_components/SettingsModal";
+import { InterviewPage } from "./interview/InterviewPage";
 
 type ProblemSummary = {
   id: string | number;
@@ -25,27 +25,27 @@ export default function Home() {
 
   return (
     <div>
-      <SettingsModal
+      {/* <SettingsModal
         show={showSettings}
         onClose={() => setShowSettings(false)}
         onThemeChange={setSelectedTheme}
         onFontChange={setSelectedFont}
         activeTheme={selectedTheme}
         activeFont={selectedFont}
-      />
-
-      {/* <LandingPage
-        onSelectProblem={handleSelectProblem}
-        onOpenSettings={() => setShowSettings(true)}
       /> */}
 
-      <InterviewPage
+      <LandingPage
+        onSelectProblem={handleSelectProblem}
+        onOpenSettings={() => setShowSettings(true)}
+      />
+
+      {/* <InterviewPage
         // problemSummary={selectedProblemSummary}
         problemSummary={{ id: "a", title: "two sum", difficulty: "Easy" }}
         // onBack={handleBackToHome}
         onBack={() => {}}
         onOpenSettings={() => setShowSettings(true)}
-      />
+      /> */}
     </div>
   );
 }
