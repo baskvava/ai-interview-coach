@@ -145,38 +145,16 @@ export const LandingPage = ({
       setErrorMsg("");
       try {
         const query = searchTerm;
-        // const prompt = `Provide a list of 5 algorithmic coding interview problem titles related to "${query}".
 
-        // Focus ONLY on algorithms and data structures.
-        // Return a JSON array of objects. Each object must have:
-        // - "id": a unique string or number
-        // - "title": the name of the problem (in English)
-        // - "difficulty": one of "Easy", "Medium", "Hard"
+        const res = await fetch("/api/generate-problem", {
+          method: "POST",
+          body: JSON.stringify({ query: query }),
+        });
 
-        // Example JSON: [{"id": 1, "title": "Two Sum", "difficulty": "Easy"}]
-        // Strictly JSON only.`;
-
-        // const responseText = await callOllama(prompt, "", "application/json");
-        // console.log("Raw response:", responseText);
-        // const data = JSON.parse(responseText);
-        // console.log("Parsed data:", data);
-        // if (Array.isArray(data)) {
-        //   setResults(data);
-        // }
-        // 1. 改良後的 Prompt
-        const prompt = `You are a strict API. Return a JSON array of 5 algorithmic coding interview problems related to "${query}".
-          Output format: [{"id": string, "title": string, "difficulty": "Easy"|"Medium"|"Hard"}]
-          Do not output markdown. Return ONLY the raw JSON array.`;
-
-        const responseText = await callOllama(prompt, "", "application/json");
-        console.log("Raw response:", responseText);
-
-        // 2. 加入清洗邏輯 (Cleaning Logic)
-        // 移除可能存在的 markdown 標記 (```json 和 ```)
-        const cleanJson = responseText.replace(/```json|```/g, "").trim();
+        const responseData = await res.json();
 
         try {
-          const data = JSON.parse(cleanJson);
+          const data = JSON.parse(responseData.result);
 
           if (Array.isArray(data)) {
             setResults(data);
