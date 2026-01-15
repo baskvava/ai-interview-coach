@@ -4,7 +4,7 @@
 
 **A modern, interactive coding interview practice platform powered by AI, adding practical example.**
 
-[Report Bug](https://github.com/your-username/ai-interview-coach/issues) · [Request Feature](https://github.com/your-username/ai-interview-coach/issues)
+[Report Bug](https://github.com/baskvava/ai-interview-coach/issues) · [Request Feature](https://github.com/baskvava/ai-interview-coach/issues)
 
 </div>
 
@@ -17,7 +17,7 @@
 
 ## 📖 Overview
 
-**AI Interview Pro** simulates a real technical interview environment where an AI Interviewer guides you through algorithmic problems, reviews your code, and provides a comprehensive performance report with actionable feedback.
+**AI Interview Coach** simulates a real technical interview environment where an AI Interviewer guides you through algorithmic problems, reviews your code, and provides a comprehensive performance report with actionable feedback.
 
 It features a "Socratic" AI coach that helps you arrive at the solution yourself rather than just giving away the answer.
 
