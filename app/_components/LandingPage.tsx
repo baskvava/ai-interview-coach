@@ -131,8 +131,6 @@ export const LandingPage = ({
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  console.log({ results });
-
   // Fetch recommendations
   useEffect(() => {
     if (!searchTerm.trim()) {

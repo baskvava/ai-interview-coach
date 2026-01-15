@@ -15,7 +15,12 @@ export async function POST(request: Request) {
         },
         {
           role: "user",
-          // content: `Generate 3 coding problems about ${query}`,
+          /**
+           * @todo improve prompt engineering here
+           * Now, we have a simple prompt to generate coding problems.
+           * the prompt can generate from another AI model for more complex logic
+           * depending on algo, system design, frontend, backend, fullstack, devops, etc.
+           */
           content: `You are a strict API. Return a JSON array of 5 algorithmic coding interview problems related to "${query}".
           Output format: [{"id": string, "title": string, "difficulty": "Easy"|"Medium"|"Hard"}]
           Do not output markdown. Return ONLY the raw JSON array.`,
@@ -36,7 +41,7 @@ export async function POST(request: Request) {
     }
 
     const data = await response.json();
-    console.log({ data });
+
     // 4. Return the clean content to your frontend
     return NextResponse.json({
       result: data.message.content,
