@@ -26,6 +26,7 @@ import {
 } from "./types";
 
 import { LANGUAGES, THEMES, FONTS } from "./constants";
+import { SYSTEM_INSTRUCTIONS } from "@/ai.config";
 
 // --- API Helper (Direct Ollama call for non-streaming tasks) ---
 async function callOllama(
@@ -327,18 +328,10 @@ export const InterviewPage = ({
   const headerStart = problem ? `${commentPrefix}Problem: ${problem.id}` : "";
   const isProblemInserted = code.startsWith(headerStart);
 
-  // System Prompt Definition
-  const systemPrompt = `You are a professional, patient, and Socratic technical interviewer.
-  Current Problem: "${problem?.title}".
-  User Language: "${LANGUAGES[selectedLanguage].name}".
-  Problem Description: "${problem?.description}".
-  
-  Your core responsibilities:
-  1. **Guide, don't solve**: Evaluate algorithmic thinking.
-  2. **Progressive Hinting**: Point out logic flaws first, don't give code immediately.
-  3. **Checkpoints**: Logic correctness, Time/Space Complexity (Big O), Edge cases.
-  4. **Tone**: Professional, encouraging, concise.
-  5. **Language**: Answer in English.`;
+  const systemPrompt = SYSTEM_INSTRUCTIONS.PROBLEM_GEN(
+    problem,
+    selectedLanguage
+  );
 
   useEffect(() => {
     if (showReport || isLoadingProblem || errorMsg) return;
