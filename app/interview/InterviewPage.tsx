@@ -4,7 +4,6 @@ import {
   AlertCircle,
   ArrowLeft,
   Bot,
-  ChevronRight,
   Clock,
   Code2,
   Cpu,
@@ -17,145 +16,16 @@ import {
   Terminal,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import {
+  type StarterCodeMap,
+  type ProblemSummary,
+  type Problem,
+  type Message,
+  type ReportData,
+  type ChatMessagePayload,
+} from "./types";
 
-// --- Types ---
-
-type StarterCodeMap = {
-  javascript: string;
-  python: string;
-  java: string;
-  typescript: string;
-};
-
-type ProblemSummary = {
-  id: string | number;
-  title: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-};
-
-type Problem = {
-  id: string | number;
-  title: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-  description: string;
-  examples: { input: string; output: string; explanation?: string }[];
-  constraints: string[];
-  starterCodeMap: StarterCodeMap;
-};
-
-type Message = {
-  id: string;
-  sender: "ai" | "user";
-  text: string;
-  timestamp: Date;
-  type?: "text" | "code-feedback" | "system";
-};
-
-type ReportData = {
-  scores: {
-    problemSolving: number;
-    codeQuality: number;
-    communication: number;
-  };
-  feedback: string;
-};
-
-type LanguageConfig = {
-  name: string;
-  fileName: string;
-};
-
-type ThemeConfig = {
-  name: string;
-  bg: string;
-  text: string;
-  gutterBg: string;
-  gutterText: string;
-  border: string;
-};
-
-type FontConfig = {
-  name: string;
-  value: string;
-  url?: string;
-};
-
-type ChatRole = "system" | "user" | "assistant";
-
-type ChatMessagePayload = {
-  role: ChatRole;
-  content: string;
-};
-
-// --- Constants ---
-
-const LANGUAGES: Record<string, LanguageConfig> = {
-  javascript: { name: "JavaScript", fileName: "solution.js" },
-  python: { name: "Python", fileName: "solution.py" },
-  java: { name: "Java", fileName: "Solution.java" },
-  typescript: { name: "TypeScript", fileName: "solution.ts" },
-};
-
-const THEMES: Record<string, ThemeConfig> = {
-  "vscode-dark": {
-    name: "VS Code Dark",
-    bg: "#1e1e1e",
-    text: "#d4d4d4",
-    gutterBg: "#1e1e1e",
-    gutterText: "#858585",
-    border: "#333333",
-  },
-  "vscode-light": {
-    name: "VS Code Light",
-    bg: "#ffffff",
-    text: "#000000",
-    gutterBg: "#ffffff",
-    gutterText: "#237893",
-    border: "#e5e5e5",
-  },
-  monokai: {
-    name: "Monokai",
-    bg: "#272822",
-    text: "#f8f8f2",
-    gutterBg: "#272822",
-    gutterText: "#90908a",
-    border: "#49483e",
-  },
-  dracula: {
-    name: "Dracula",
-    bg: "#282a36",
-    text: "#f8f8f2",
-    gutterBg: "#282a36",
-    gutterText: "#6272a4",
-    border: "#44475a",
-  },
-  nord: {
-    name: "Nord",
-    bg: "#2e3440",
-    text: "#d8dee9",
-    gutterBg: "#2e3440",
-    gutterText: "#4c566a",
-    border: "#434c5e",
-  },
-};
-
-const FONTS: Record<string, FontConfig> = {
-  default: {
-    name: "System Default",
-    value:
-      'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-  },
-  "comic-shanns": {
-    name: "Comic Shanns Mono",
-    value: '"Comic Shanns Mono", monospace',
-    url: "https://cdn.jsdelivr.net/npm/comic-shanns-mono@1.0.0/comic-shanns-mono.css",
-  },
-  "fira-code": {
-    name: "Fira Code",
-    value: '"Fira Code", monospace',
-    url: "https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css",
-  },
-};
+import { LANGUAGES, THEMES, FONTS } from "./constants";
 
 // --- API Helper (Direct Ollama call for non-streaming tasks) ---
 async function callOllama(
@@ -175,7 +45,7 @@ async function callOllama(
     const body: any = {
       model: "qwen2.5",
       messages: messages,
-      stream: false,
+      stream: false, // Disable streaming, get full response at once
     };
 
     if (responseMimeType === "application/json") {
@@ -538,11 +408,11 @@ export const InterviewPage = ({
   // ------------------------------------------------------------------
   const startStreaming = async (messagesPayload: ChatMessagePayload[]) => {
     try {
-      // 呼叫 Next.js 後端 API (Server-to-Server to Ollama)
+      // Call Next.js backend API (Server-to-Server to Ollama)
       const res = await fetch("/api/stream-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // 直接傳送整個 messages 陣列
+        // Send the entire messages array directly
         body: JSON.stringify({ messages: messagesPayload }),
       });
 
@@ -551,12 +421,12 @@ export const InterviewPage = ({
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
 
-      // 初始化 AI 回應的 Message
+      // Initialize AI response message
       const aiMessageId = Date.now().toString();
       addMessage({
         id: aiMessageId,
         sender: "ai",
-        text: "", // 初始為空
+        text: "", // Initially empty
       });
 
       while (true) {
@@ -565,10 +435,10 @@ export const InterviewPage = ({
 
         const textChunk = decoder.decode(value, { stream: true });
 
-        // 即時更新最後一則 (AI) 的訊息內容
+        // Real-time update of the last (AI) message content
         setMessages((prev) => {
           const lastMsg = prev[prev.length - 1];
-          // 確保我們是更新正確的 AI 訊息
+          // Ensure we are updating the correct AI message
           if (lastMsg.id === aiMessageId) {
             return [
               ...prev.slice(0, -1),
@@ -580,7 +450,7 @@ export const InterviewPage = ({
       }
     } catch (error) {
       console.error("Streaming error:", error);
-      // 如果出錯，將錯誤訊息附加到對話中
+      // If error occurs, append error message to conversation
       setMessages((prev) => {
         const lastMsg = prev[prev.length - 1];
         if (lastMsg.sender === "ai" && lastMsg.text === "") {
@@ -602,19 +472,19 @@ export const InterviewPage = ({
     const textToSend = overrideText || inputText;
     if (!textToSend.trim()) return;
 
-    // 1. 顯示使用者的訊息在 UI
+    // 1. Display user message in UI
     addMessage({ id: Date.now().toString(), sender: "user", text: textToSend });
     setInputText("");
     setIsAiTyping(true);
 
     try {
-      // 2. 建構 System Message
+      // 2. Construct System Message
       const systemMessage: ChatMessagePayload = {
         role: "system",
         content: systemPrompt,
       };
 
-      // 3. 建構 History (排除 System type 的 UI 提示訊息)
+      // 3. Construct History (exclude UI hint messages of System type)
       const historyMessages: ChatMessagePayload[] = messages
         .filter((m) => m.type !== "system")
         .map((m) => ({
@@ -622,29 +492,29 @@ export const InterviewPage = ({
           content: m.text,
         }));
 
-      // 4. 建構當前訊息 (包含 Context Injection)
-      // 這裡我們把目前的程式碼狀態偷偷塞給 AI，但 UI 上只顯示使用者原本輸入的字
+      // 4. Construct current message (including Context Injection)
+      // Here we inject the current code state to AI hiddenly, but UI only shows user's original input
       const contextRichContent = `
-${textToSend}
+            ${textToSend}
 
----
-[Context Info]
-Language: ${LANGUAGES[selectedLanguage].name}
-Current Code:
-\`\`\`${selectedLanguage}
-${code}
-\`\`\`
-`;
+            ---
+            [Context Info]
+            Language: ${LANGUAGES[selectedLanguage].name}
+            Current Code:
+            \`\`\`${selectedLanguage}
+            ${code}
+            \`\`\`
+            `;
 
       const currentUserMessage: ChatMessagePayload = {
         role: "user",
         content: contextRichContent,
       };
 
-      // 5. 組合完整的 Payload
+      // 5. Combine into full Payload
       const payload = [systemMessage, ...historyMessages, currentUserMessage];
 
-      // 6. 開始串流
+      // 6. Start streaming
       await startStreaming(payload);
     } catch (e: any) {
       console.error("Send message failed", e);
@@ -703,7 +573,7 @@ ${code}
       const starterCode =
         problem.starterCodeMap[selectedLanguage as keyof StarterCodeMap] || "";
 
-      // 簡單的 transcript 摘要
+      // Simple transcript summary
       const transcript = messages
         .map((m) => `[${m.sender}]: ${m.text}`)
         .join("\n");
@@ -732,7 +602,7 @@ ${code}
 
   const handleGetHint = () => {
     setHintCount((prev) => prev + 1);
-    // 直接呼叫 handleSendMessage 並傳入預設文字
+    // Directly call handleSendMessage with default text
     handleSendMessage(
       "I'm stuck. Can you give me a hint without giving away the answer?"
     );
