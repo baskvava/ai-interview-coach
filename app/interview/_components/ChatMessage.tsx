@@ -12,7 +12,7 @@ export const ChatMessage = ({ message }: { message: Message }) => {
       className={`flex w-full mb-6 ${isAi ? "justify-start" : "justify-end"}`}
     >
       <div
-        className={`flex gap-4 max-w-[85%] ${
+        className={`flex gap-4 max-w-[85%] min-w-0 ${
           isAi ? "flex-row" : "flex-row-reverse"
         }`}
       >
@@ -33,13 +33,13 @@ export const ChatMessage = ({ message }: { message: Message }) => {
         {/* Message Bubble */}
         <div
           className={`
-            p-5 shadow-sm text-gray-200 leading-relaxed
-            ${
-              isAi
-                ? "bg-[#252526] rounded-2xl rounded-tl-none border border-gray-700/50"
-                : "bg-indigo-600 rounded-2xl rounded-tr-none text-white"
-            }
-        `}
+              p-5 shadow-sm text-gray-200 leading-relaxed max-w-full break-words whitespace-pre-wrap
+              ${
+                isAi
+                  ? "bg-[#252526] rounded-2xl rounded-tl-none border border-gray-700/50"
+                  : "bg-indigo-600 rounded-2xl rounded-tr-none text-white"
+              }
+          `}
         >
           {/* The magic happens here:
             We define custom Markdown rendering rules to transform plain text into the specific design style 
@@ -65,12 +65,12 @@ export const ChatMessage = ({ message }: { message: Message }) => {
               code: ({ className, children, ...props }) => {
                 const match = /language-(\w+)/.exec(className || "");
                 return match ? (
-                  <div className="my-3 rounded-lg overflow-hidden border border-gray-700 bg-[#1e1e1e]">
+                  <div className="my-3 rounded-lg overflow-hidden border border-gray-700 bg-[#1e1e1e] max-w-full">
                     <div className="bg-[#2d2d2d] px-3 py-1 text-xs text-gray-400 border-b border-gray-700">
                       {match[1]}
                     </div>
                     <code
-                      className="block p-3 text-sm font-mono text-gray-300 overflow-x-auto"
+                      className="block p-3 text-sm font-mono text-gray-300 overflow-x-auto max-w-full"
                       {...props}
                     >
                       {children}
@@ -78,7 +78,7 @@ export const ChatMessage = ({ message }: { message: Message }) => {
                   </div>
                 ) : (
                   <code
-                    className="bg-gray-700/50 px-1.5 py-0.5 rounded text-sm font-mono text-indigo-200"
+                    className="bg-gray-700/50 px-1.5 py-0.5 rounded text-sm font-mono text-indigo-200 break-words max-w-full whitespace-pre-wrap"
                     {...props}
                   >
                     {children}
