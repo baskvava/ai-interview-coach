@@ -551,7 +551,7 @@ export const InterviewPage = ({
       {/* Main Content */}
       <main className="flex-1 flex overflow-hidden">
         {/* Left Panel: Code Editor */}
-        <div className="flex-1 flex flex-col border-r border-gray-700 min-w-[350px] md:min-w-[500px]">
+        <div className="flex-1 flex flex-col border-r border-gray-700 min-w-87.5 md:min-w-125">
           <div className="h-10 bg-[#1e1e1e] border-b border-gray-700 flex items-center justify-between px-4">
             <div className="flex items-center space-x-2 text-xs">
               <Code2 size={14} className="text-gray-400" />
@@ -611,7 +611,7 @@ export const InterviewPage = ({
         </div>
 
         {/* Right Panel: Problem & Chat */}
-        <div className="w-[400px] lg:w-[450px] flex flex-col bg-[#181818] border-l border-gray-700">
+        <div className="w-100 lg:w-112.5 flex flex-col bg-[#181818] border-l border-gray-700">
           <div className="flex border-b border-gray-700">
             <button
               onClick={() => setActiveTab("problem")}

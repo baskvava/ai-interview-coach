@@ -7,8 +7,11 @@ import {
 const LANGUAGES: Record<string, LanguageConfig> = {
   javascript: { name: "JavaScript", fileName: "solution.js" },
   python: { name: "Python", fileName: "solution.py" },
-  java: { name: "Java", fileName: "Solution.java" },
-  typescript: { name: "TypeScript", fileName: "solution.ts" },
+  /**
+   * @todo add more languages later
+   */
+  // java: { name: "Java", fileName: "Solution.java" },
+  // typescript: { name: "TypeScript", fileName: "solution.ts" },
 };
 
 const THEMES: Record<string, ThemeConfig> = {

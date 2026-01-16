@@ -111,6 +111,7 @@ function Avatar({ isAi }: { isAi: boolean }) {
     </div>
   );
 }
+
 export const ChatMessage = ({ message }: { message: Message }) => {
   const isAi = message.sender === "ai";
 
