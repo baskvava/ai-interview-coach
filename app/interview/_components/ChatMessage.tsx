@@ -46,6 +46,12 @@ export const ChatMessage = ({ message }: { message: Message }) => {
           */}
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
+            /**
+             * @important notes:
+             * xss protection: avoid using rehype-raw unless you sanitize input
+             * order of rehype plugins is important: first parse HTML (raw), then sanitize
+             * rehypePlugins={[rehypeRaw, rehypeSanitize]}
+             */
             components={{
               // 1. Regular paragraphs (p tag) -> corresponds to <p class="mb-3">
               p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
