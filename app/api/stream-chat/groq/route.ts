@@ -4,7 +4,7 @@ export async function POST(request: Request) {
   try {
     const { messages } = await request.json();
 
-    // 1. 檢查 API Key
+    // 1. Check API Key
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
@@ -13,21 +13,21 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. 改為呼叫 Groq API (OpenAI 兼容介面)
+    // 2. Call Groq API (OpenAI compatible interface)
     const groqResponse = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`, // 加上認證
+          Authorization: `Bearer ${apiKey}`, // Add authentication
         },
         body: JSON.stringify({
-          // model: "llama3-70b-8192", // 舊版
-          model: "llama-3.3-70b-versatile", // 推薦：最新版 Llama 3.3 70B
+          // model: "llama3-70b-8192", // Old version
+          model: "llama-3.3-70b-versatile", // Recommended: Latest Llama 3.3 70B
           messages: messages,
-          stream: true, // 開啟串流
-          temperature: 0.7, // 可選：控制創意度
+          stream: true, // Enable streaming
+          temperature: 0.7, // Optional: Control creativity
         }),
       }
     );
@@ -58,32 +58,32 @@ export async function POST(request: Request) {
               break;
             }
 
-            // 解碼新收到的區塊
+            // Decode the newly received chunk
             const chunk = decoder.decode(value, { stream: true });
             buffer += chunk;
 
-            // Groq/OpenAI 的串流是以 "\n\n" 為分隔，但我們按行處理即可
+            // Groq/OpenAI streams are separated by "\n\n", but processing line by line works fine
             const lines = buffer.split("\n");
 
-            // 保留最後一行（可能不完整）到下一次迴圈
+            // Keep the last line (potentially incomplete) for the next loop
             buffer = lines.pop() || "";
 
             for (const line of lines) {
               const trimmedLine = line.trim();
 
-              // 3. 解析 Groq 的 SSE 格式 (Server-Sent Events)
-              // 格式通常是: data: {"id":..., "choices":[{...}]}
+              // 3. Parse Groq's SSE format (Server-Sent Events)
+              // Format is usually: data: {"id":..., "choices":[{...}]}
               if (!trimmedLine.startsWith("data: ")) continue;
 
               const jsonStr = trimmedLine.replace("data: ", "");
 
-              // 處理結束訊號
+              // Handle end signal
               if (jsonStr === "[DONE]") continue;
 
               try {
                 const json = JSON.parse(jsonStr);
 
-                // Groq (OpenAI 格式) 的內容在 choices[0].delta.content
+                // Groq (OpenAI format) content is in choices[0].delta.content
                 const content = json.choices?.[0]?.delta?.content;
 
                 if (content) {
