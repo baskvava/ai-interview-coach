@@ -16,7 +16,7 @@ export const ChatMessage = ({ message }: { message: Message }) => {
           isAi ? "flex-row" : "flex-row-reverse"
         }`}
       >
-        {/* Avatar (頭像) */}
+        {/* Avatar */}
         <div
           className={`
             w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs text-white font-bold shadow-sm
@@ -30,7 +30,7 @@ export const ChatMessage = ({ message }: { message: Message }) => {
           {isAi ? <Bot size={18} /> : "YOU"}
         </div>
 
-        {/* Bubble (對話框) */}
+        {/* Message Bubble */}
         <div
           className={`
             p-5 shadow-sm text-gray-200 leading-relaxed
@@ -41,21 +41,21 @@ export const ChatMessage = ({ message }: { message: Message }) => {
             }
         `}
         >
-          {/* 這裡神奇的地方來了：
-            我們自定義 Markdown 的渲染規則，讓普通的文字變成你設計的樣式 
+          {/* The magic happens here:
+            We define custom Markdown rendering rules to transform plain text into the specific design style 
           */}
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
-              // 1. 一般段落 (p tag) -> 對應你的 <p class="mb-3">
+              // 1. Regular paragraphs (p tag) -> corresponds to <p class="mb-3">
               p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
-              // 2. 粗體 (**text**) -> 對應你的 <strong>O(n²)</strong>
+              // 2. Bold (**text**) -> corresponds to the styled <strong>O(n²)</strong>
               strong: ({ children }) => (
                 <span className="font-bold text-indigo-400 bg-indigo-500/10 px-1 rounded">
                   {children}
                 </span>
               ),
-              // 3. 程式碼區塊 (```code```)
+              // 3. Code blocks (```code```)
               code: ({ className, children, ...props }) => {
                 const match = /language-(\w+)/.exec(className || "");
                 return match ? (
@@ -79,13 +79,13 @@ export const ChatMessage = ({ message }: { message: Message }) => {
                   </code>
                 );
               },
-              // 4. 引用區塊 (> text) -> 對應你的 "Can you optimize..." 灰色小字
+              // 4. Blockquotes (> text) -> corresponds to the grey subtext/hints
               blockquote: ({ children }) => (
                 <div className="mt-4 pt-3 border-t border-gray-700/50 text-sm text-gray-400 italic">
                   {children}
                 </div>
               ),
-              // 5. 列表
+              // 5. Lists
               ul: ({ children }) => (
                 <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>
               ),
