@@ -190,17 +190,15 @@ export const InterviewPage = ({
 
         // console.log("fetchProblemDetails res:", data);
         if (!res.ok || !res.body) throw new Error(res.statusText);
-        console.log("fetchProblemDetails res", res);
 
         const data = await res.json();
-        console.log("Generated Problem Raw Data:", data);
         // 1. 移除可能存在的 Markdown 標記 (```json 和 ```)
         const cleanContent = data.content
           .replace(/^```json\s*/, "") // 移除開頭的 ```json
           .replace(/^```\s*/, "") // 或者移除開頭單純的 ```
           .replace(/\s*```$/, ""); // 移除結尾的 ```
         const content = JSON.parse(cleanContent);
-        console.log("Generated Problem Content:", content);
+
         if (content.starterCodeMap) {
           for (const lang in content.starterCodeMap) {
             if (typeof content.starterCodeMap[lang] === "string") {
