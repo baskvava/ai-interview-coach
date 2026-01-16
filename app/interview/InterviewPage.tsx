@@ -118,53 +118,100 @@ export const InterviewPage = ({
 
   // --- Fetch Full Problem Details on Mount ---
   useEffect(() => {
-    const fetchProblemDetails = async () => {
-      setIsLoadingProblem(true);
-      setErrorMsg("");
+    // const fetchProblemDetails = async () => {
+    //   setIsLoadingProblem(true);
+    //   setErrorMsg("");
+    //   try {
+    // const prompt = `Generate a comprehensive ALGORITHMIC coding interview problem for the title: "${problemSummary.title}".
+    // Difficulty: ${problemSummary.difficulty}.
+    // CRITICAL INSTRUCTION: Frame the problem description as a REAL-WORLD SOFTWARE ENGINEERING SCENARIO.
+    // For example, if the algorithm is "Two Sum", describe it as "Finding two transactions that sum to a specific value for fraud detection".
+    // Requirements:
+    // 1. "starterCodeMap": MUST contain full function signature, TODO body, and closing brace.
+    // 2. "examples": Include input/output and explanation.
+    // 3. Return strictly JSON.
+    // Output Schema:
+    // {
+    //     "id": "${problemSummary.id}",
+    //     "title": "${problemSummary.title}",
+    //     "difficulty": "${problemSummary.difficulty}",
+    //     "description": "Markdwon supported string",
+    //     "examples": [{ "input": "...", "output": "...", "explanation": "..." }],
+    //     "constraints": ["..."],
+    //     "starterCodeMap": { "javascript": "...", "python": "..." }
+    // }`;
+    //     const responseText = await callOllama(
+    //       prompt,
+    //       "You are a senior technical interviewer focused on Algorithms. Return JSON only.",
+    //       "application/json"
+    //     );
+    // const data = JSON.parse(responseText);
+    // // Fix: Clean double-escaped newlines in the code strings
+    // if (data.starterCodeMap) {
+    //   for (const lang in data.starterCodeMap) {
+    //     if (typeof data.starterCodeMap[lang] === "string") {
+    //       data.starterCodeMap[lang] = data.starterCodeMap[lang].replace(
+    //         /\\n/g,
+    //         "\n"
+    //       );
+    //     }
+    //   }
+    // }
+    // setProblem(data);
+    // setCode(data.starterCodeMap["javascript"] || "");
+    // // Initial greeting
+    // setMessages([
+    //   {
+    //     id: "init-1",
+    //     sender: "ai",
+    //     text: `Hello! I'm your AI Interviewer. Today we'll be tackling the algorithmic problem "${data.title}".\n\nTake some time to read the description. Feel free to discuss your approach (Time/Space complexity) with me. Ready when you are!`,
+    //     timestamp: new Date(),
+    //   },
+    // ]);
+    //   } catch (e: any) {
+    //     console.error("Failed to generate problem", e);
+    //     setErrorMsg("Failed to generate problem. Please try again.");
+    //   } finally {
+    //     setIsLoadingProblem(false);
+    //   }
+    // };
+    // fetchProblemDetails();
+    const fetchProblemDetails = async (
+      messagesPayload: ChatMessagePayload[]
+    ) => {
       try {
-        const prompt = `Generate a comprehensive ALGORITHMIC coding interview problem for the title: "${problemSummary.title}".
-        Difficulty: ${problemSummary.difficulty}.
+        // Call Next.js backend API (Server-to-Server to Ollama)
+        const res = await fetch("/api/generate-problem/groq", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          // Send the entire messages array directly
+          body: JSON.stringify({ messages: messagesPayload }),
+        });
 
-        CRITICAL INSTRUCTION: Frame the problem description as a REAL-WORLD SOFTWARE ENGINEERING SCENARIO. 
-        For example, if the algorithm is "Two Sum", describe it as "Finding two transactions that sum to a specific value for fraud detection".
-        
-        Requirements:
-        1. "starterCodeMap": MUST contain full function signature, TODO body, and closing brace.
-        2. "examples": Include input/output and explanation.
-        3. Return strictly JSON.
+        // console.log("fetchProblemDetails res:", data);
+        if (!res.ok || !res.body) throw new Error(res.statusText);
+        console.log("fetchProblemDetails res", res);
 
-        Output Schema:
-        {
-            "id": "${problemSummary.id}",
-            "title": "${problemSummary.title}",
-            "difficulty": "${problemSummary.difficulty}",
-            "description": "Markdwon supported string",
-            "examples": [{ "input": "...", "output": "...", "explanation": "..." }],
-            "constraints": ["..."],
-            "starterCodeMap": { "javascript": "...", "python": "..." }
-        }`;
-
-        const responseText = await callOllama(
-          prompt,
-          "You are a senior technical interviewer focused on Algorithms. Return JSON only.",
-          "application/json"
-        );
-        const data = JSON.parse(responseText);
-
-        // Fix: Clean double-escaped newlines in the code strings
-        if (data.starterCodeMap) {
-          for (const lang in data.starterCodeMap) {
-            if (typeof data.starterCodeMap[lang] === "string") {
-              data.starterCodeMap[lang] = data.starterCodeMap[lang].replace(
-                /\\n/g,
-                "\n"
-              );
+        const data = await res.json();
+        console.log("Generated Problem Raw Data:", data);
+        // 1. 移除可能存在的 Markdown 標記 (```json 和 ```)
+        const cleanContent = data.content
+          .replace(/^```json\s*/, "") // 移除開頭的 ```json
+          .replace(/^```\s*/, "") // 或者移除開頭單純的 ```
+          .replace(/\s*```$/, ""); // 移除結尾的 ```
+        const content = JSON.parse(cleanContent);
+        console.log("Generated Problem Content:", content);
+        if (content.starterCodeMap) {
+          for (const lang in content.starterCodeMap) {
+            if (typeof content.starterCodeMap[lang] === "string") {
+              content.starterCodeMap[lang] = content.starterCodeMap[
+                lang
+              ].replace(/\\n/g, "\n");
             }
           }
         }
-        setProblem(data);
-        setCode(data.starterCodeMap["javascript"] || "");
-
+        setProblem(content);
+        setCode(content.starterCodeMap["javascript"] || "");
         // Initial greeting
         setMessages([
           {
@@ -174,15 +221,30 @@ export const InterviewPage = ({
             timestamp: new Date(),
           },
         ]);
-      } catch (e: any) {
-        console.error("Failed to generate problem", e);
-        setErrorMsg("Failed to generate problem. Please try again.");
+      } catch (error) {
+        console.error("Streaming error:", error);
+        // If error occurs, append error message to conversation
+        setMessages((prev) => {
+          const lastMsg = prev[prev.length - 1];
+          if (lastMsg.sender === "ai" && lastMsg.text === "") {
+            return [
+              ...prev.slice(0, -1),
+              { ...lastMsg, text: "⚠️ Connection error occurred." },
+            ];
+          }
+          return prev;
+        });
       } finally {
         setIsLoadingProblem(false);
       }
     };
 
-    fetchProblemDetails();
+    fetchProblemDetails([
+      {
+        role: "system",
+        content: SYSTEM_INSTRUCTIONS.PROBLEM_GEN(problemSummary),
+      },
+    ]);
   }, [problemSummary]);
 
   // Update code when language changes
@@ -198,10 +260,7 @@ export const InterviewPage = ({
   const headerStart = problem ? `${commentPrefix}Problem: ${problem.id}` : "";
   const isProblemInserted = code.startsWith(headerStart);
 
-  const systemPrompt = SYSTEM_INSTRUCTIONS.PROBLEM_GEN(
-    problem,
-    selectedLanguage
-  );
+  const systemPrompt = SYSTEM_INSTRUCTIONS.CHAT_GEN(problem, selectedLanguage);
 
   useEffect(() => {
     if (showReport || isLoadingProblem || errorMsg) return;

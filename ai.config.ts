@@ -1,8 +1,28 @@
-import { LANGUAGES } from "./app/interview/constants";
-import { Problem } from "./app/interview/types";
+import { Problem, ProblemSummary } from "./app/interview/types";
 
 export const SYSTEM_INSTRUCTIONS = {
-  PROBLEM_GEN: (problem: Problem | null, selectedLanguage: string) =>
+  PROBLEM_GEN: (
+    problemSummary: ProblemSummary
+  ) => `Generate a comprehensive ALGORITHMIC coding interview problem for the title: "${problemSummary.title}".
+        Difficulty: ${problemSummary.difficulty}.
+        CRITICAL INSTRUCTION: Frame the problem description as a REAL-WORLD SOFTWARE ENGINEERING SCENARIO.
+        For example, if the algorithm is "Two Sum", describe it as "Finding two transactions that sum to a specific value for fraud detection".
+        Requirements:
+        1. "starterCodeMap": MUST contain full function signature, TODO body, and closing brace.
+        2. "examples": Include input/output and explanation.
+        3. Return strictly JSON.
+        Output Schema:
+        {
+            "id": "${problemSummary.id}",
+            "title": "${problemSummary.title}",
+            "difficulty": "${problemSummary.difficulty}",
+            "description": "Markdwon supported string",
+            "examples": [{ "input": "...", "output": "...", "explanation": "..." }],
+            "constraints": ["..."],
+            "starterCodeMap": { "javascript": "...", "python": "..." }
+        }
+        You are a helpful assistant. You must output strictly valid JSON.`,
+  CHAT_GEN: (problem: Problem | null, selectedLanguage: string) =>
     `
     You are a professional technical interviewer.
     Current Problem: "${problem?.title}".
